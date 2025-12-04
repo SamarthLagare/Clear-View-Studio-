@@ -12,7 +12,7 @@ st.set_page_config(
     page_title="Clear View Studio",
     page_icon="💎",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded" # Forces Sidebar to start open
 )
 
 # --- 2. NAVIGATION SETUP ---
@@ -22,7 +22,7 @@ if 'page' not in st.session_state:
 def navigate_to(page_name):
     st.session_state.page = page_name
 
-# --- 3. CSS STYLING ---
+# --- 3. CSS STYLING (FIXED) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
@@ -40,11 +40,10 @@ st.markdown("""
         text-align: left;
     }
 
-    /* Headings */
     h1, h2, h3 { text-align: left; }
     p { text-align: left; color: #B0B0B0; }
 
-    /* Buttons */
+    /* Clean Buttons */
     div.stButton > button {
         background-color: #262730;
         color: white;
@@ -71,9 +70,11 @@ st.markdown("""
         border-bottom: 2px solid #ff4b4b;
     }
 
+    /* FIX: We only hide the Menu and Footer. 
+       We DO NOT hide the 'header', because that contains the Sidebar Toggle button. */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    header {visibility: hidden;}
+    
     </style>
 """, unsafe_allow_html=True)
 
@@ -190,54 +191,38 @@ def render_editor(image_input, key_prefix="img"):
         st.markdown("---")
         st.download_button("Download Image", convert_to_bytes(processed), "result.png", "image/png")
 
-    # --- IMAGE DISPLAY LOGIC (FIXED) ---
     with c_img:
+        # Simple Display Logic
         if mode == "Split View":
             h, w, _ = processed.shape
-            
-            # 1. Vertical 50/50
             if split == "Vert 50/50":
                 c1, c2 = st.columns(2)
                 c1.image(processed[:, :w//2], caption="Left", use_container_width=True)
                 c2.image(processed[:, w//2:], caption="Right", use_container_width=True)
-            
-            # 2. Vertical 70/30
             elif split == "Vert 70/30":
                 c1, c2 = st.columns(2)
                 mid = int(w*0.7)
-                c1.image(processed[:, :mid], caption="70%", use_container_width=True)
-                c2.image(processed[:, mid:], caption="30%", use_container_width=True)
-            
-            # 3. Vertical 3-Way (Fixed)
+                c1.image(processed[:, :mid], caption="L", use_container_width=True)
+                c2.image(processed[:, mid:], caption="R", use_container_width=True)
             elif split == "Vert 3-Way":
                 c1, c2, c3 = st.columns(3)
-                p1 = w // 3
-                p2 = 2 * (w // 3)
-                c1.image(processed[:, :p1], caption="Part 1", use_container_width=True)
-                c2.image(processed[:, p1:p2], caption="Part 2", use_container_width=True)
-                c3.image(processed[:, p2:], caption="Part 3", use_container_width=True)
-            
-            # 4. Horizontal 50/50 (Fixed)
+                p1, p2 = w//3, 2*(w//3)
+                c1.image(processed[:, :p1], caption="1", use_container_width=True)
+                c2.image(processed[:, p1:p2], caption="2", use_container_width=True)
+                c3.image(processed[:, p2:], caption="3", use_container_width=True)
             elif split == "Horiz 50/50":
                 c1, c2 = st.columns(2)
-                mid = h // 2
-                c1.image(processed[:mid, :], caption="Top Half", use_container_width=True)
-                c2.image(processed[mid:, :], caption="Bottom Half", use_container_width=True)
-                
-            # 5. Grid 2x2 (Fixed)
+                c1.image(processed[:h//2, :], caption="Top", use_container_width=True)
+                c2.image(processed[h//2:, :], caption="Bottom", use_container_width=True)
             elif split == "Grid 2x2":
                 mx, my = w//2, h//2
-                # Row 1
                 r1c1, r1c2 = st.columns(2)
-                r1c1.image(processed[:my, :mx], caption="Top-Left", use_container_width=True)
-                r1c2.image(processed[:my, mx:], caption="Top-Right", use_container_width=True)
-                # Row 2
+                r1c1.image(processed[:my, :mx], caption="TL", use_container_width=True)
+                r1c2.image(processed[:my, mx:], caption="TR", use_container_width=True)
                 r2c1, r2c2 = st.columns(2)
-                r2c1.image(processed[my:, :mx], caption="Bot-Left", use_container_width=True)
-                r2c2.image(processed[my:, mx:], caption="Bot-Right", use_container_width=True)
-                
+                r2c1.image(processed[my:, :mx], caption="BL", use_container_width=True)
+                r2c2.image(processed[my:, mx:], caption="BR", use_container_width=True)
         else:
-            # Default View
             st.image(processed, use_container_width=True)
 
 # ==========================================
@@ -245,6 +230,7 @@ def render_editor(image_input, key_prefix="img"):
 # ==========================================
 with st.sidebar:
     st.title("Navigation")
+    
     options = ["Home", "Image Studio", "Video Lab"]
     default_ix = 0
     if st.session_state.page == 'image': default_ix = 1
