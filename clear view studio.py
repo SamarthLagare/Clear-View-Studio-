@@ -12,19 +12,17 @@ st.set_page_config(
     page_title="Clear View Studio",
     page_icon="💎",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded"  # Forces Sidebar to stay open
 )
 
-# --- 2. NAVIGATION SETUP (The Fix) ---
-# Initialize session state
+# --- 2. NAVIGATION SETUP ---
 if 'page' not in st.session_state:
     st.session_state.page = 'home'
 
 def navigate_to(page_name):
-    """Callback to update the page state safely"""
     st.session_state.page = page_name
 
-# --- 3. CSS STYLING ---
+# --- 3. FIXED CSS ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
@@ -42,11 +40,11 @@ st.markdown("""
         text-align: left;
     }
 
-    /* Left Aligned Headers */
+    /* Headings */
     h1, h2, h3 { text-align: left; }
     p { text-align: left; color: #B0B0B0; }
 
-    /* Clean Buttons */
+    /* Buttons */
     div.stButton > button {
         background-color: #262730;
         color: white;
@@ -73,9 +71,10 @@ st.markdown("""
         border-bottom: 2px solid #ff4b4b;
     }
 
+    /* Only hide the hamburger menu and footer, NOT the header (keeps sidebar arrow visible) */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    header {visibility: hidden;}
+    
     </style>
 """, unsafe_allow_html=True)
 
@@ -215,23 +214,31 @@ def render_editor(image_input, key_prefix="img"):
             st.image(processed, use_container_width=True)
 
 # ==========================================
-# 5. SIDEBAR NAVIGATION
+# 5. SIDEBAR NAVIGATION (FIXED)
 # ==========================================
 with st.sidebar:
-    st.header("Navigation")
-    # This radio button stays synced with session state
-    nav = st.radio("Go to", ["Home", "Image Studio", "Video Lab"], 
-                   index=["home", "image", "video"].index(st.session_state.page))
-
-    # Force update state if radio changes
-    if nav == "Home" and st.session_state.page != "home":
-        st.session_state.page = "home"
+    st.title("Navigation")
+    
+    # We use a Radio button for the menu, which is more stable than buttons
+    # We sync it with the session state
+    options = ["Home", "Image Studio", "Video Lab"]
+    
+    # Determine default index based on current page
+    default_ix = 0
+    if st.session_state.page == 'image': default_ix = 1
+    elif st.session_state.page == 'video': default_ix = 2
+    
+    selected_page = st.radio("Go to:", options, index=default_ix)
+    
+    # Logic to change page if radio selection changes
+    if selected_page == "Home" and st.session_state.page != 'home':
+        st.session_state.page = 'home'
         st.rerun()
-    elif nav == "Image Studio" and st.session_state.page != "image":
-        st.session_state.page = "image"
+    elif selected_page == "Image Studio" and st.session_state.page != 'image':
+        st.session_state.page = 'image'
         st.rerun()
-    elif nav == "Video Lab" and st.session_state.page != "video":
-        st.session_state.page = "video"
+    elif selected_page == "Video Lab" and st.session_state.page != 'video':
+        st.session_state.page = 'video'
         st.rerun()
 
 # ==========================================
