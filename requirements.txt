@@ -3,12 +3,3 @@ opencv-python-headless
 numpy
 Pillow
 moviepy
-
-streamlit
-pandas
-numpy
-plotly
-seaborn
-matplotlib
-scikit-learn
-openpyxl
